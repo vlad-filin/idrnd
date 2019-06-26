@@ -14,7 +14,9 @@ class VoiceAntiSpoofDataset(Dataset):
         :param reading_fn: function to read .waf files, returns np.arrays
         :param train_val_index: dict, TODO after
         """
-        assert mode in set('val', 'train'), "mode must be one of ('train', val')"
+        assert mode in set(['val', 'train', 'all']), "mode must" \
+                                                     " be one of (train, val, all)"
+
         self.transform = transform
         self.reading_fn = reading_fn
         if train_val_index is None:
@@ -32,9 +34,14 @@ class VoiceAntiSpoofDataset(Dataset):
             if mode == 'train':
                 self.labels = [0] * len(train_human) + [1] * len(train_spoof)
                 self.data = train_human + train_spoof
-            else:
+            elif mode == 'val':
                 self.labels = [0] * len(val_human) + [1] * len(val_spoof)
                 self.data = val_human + val_spoof
+            else:
+                self.labels = ([0] * len(train_human) + [1] * len(train_spoof) +
+                               [0] * len(val_human) + [1] * len(val_spoof))
+                self.data = (train_human + train_spoof +
+                             val_human + val_spoof)
         else:
             raise NotImplementedError
 
@@ -43,8 +50,7 @@ class VoiceAntiSpoofDataset(Dataset):
         for t in self.transform:
             data = t(data)
         label = self.labels[idx]
-        data = self.transform(data)
-        return data, label
+        return {'data': data, 'label': label}
 
     def __len__(self):
         return len(self.data)
