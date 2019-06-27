@@ -21,8 +21,6 @@ class VoiceAntiSpoofDataset(Dataset):
         self.reading_fn = reading_fn
         if train_val_index is None:
             wav_paths = sorted(glob.glob(os.path.join(dataset_dir, '**/*.wav'), recursive=True))
-            random.seed(seed)
-            random.shuffle(wav_paths)
             train_paths = wav_paths[:40000]
             val_paths = wav_paths[40000:]
 
@@ -38,10 +36,12 @@ class VoiceAntiSpoofDataset(Dataset):
                 self.labels = [0] * len(val_human) + [1] * len(val_spoof)
                 self.data = val_human + val_spoof
             else:
-                self.labels = ([0] * len(train_human) + [1] * len(train_spoof) +
-                               [0] * len(val_human) + [1] * len(val_spoof))
-                self.data = (train_human + train_spoof +
-                             val_human + val_spoof)
+                human = sorted(filter(lambda path: "human" in path, wav_paths))
+                print(len(human), "qq")
+                spoof = sorted(filter(lambda path: "spoof" in path, wav_paths))
+                print(len(spoof), "qqq")
+                self.labels = ([0] * len(human) + [1] * len(spoof))
+                self.data = human + spoof
         else:
             raise NotImplementedError
 

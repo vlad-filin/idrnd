@@ -1,6 +1,6 @@
 import numpy as np
 import librosa
-from scipy.io import wavfile\
+from scipy.io import wavfile
 
 def read_fromBaseline(wav_path, length=66000, random_start=False):
     try:
@@ -8,8 +8,6 @@ def read_fromBaseline(wav_path, length=66000, random_start=False):
         assert sr == 16000
         if length > len(x):
             x = np.concatenate([x] * int(np.ceil(length/len(x))))
-        if random_start:
-            x = x[random.randint(0, len(x) - length):]
         feature = x[:length]
         return feature / np.max(np.abs(feature))
     except Exception as e:

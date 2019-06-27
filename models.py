@@ -12,6 +12,6 @@ class ModelWrapper_TorchVisionNet(nn.Module):
 
         x = self.conv1x1(x)
         x = self.Net(x)
-        x = self.softmax(x)
+        #x = self.softmax(x)
         return x
 
