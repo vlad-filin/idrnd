@@ -6,7 +6,7 @@ import random
 
 class VoiceAntiSpoofDataset(Dataset):
     def __init__(self, dataset_dir, mode, reading_fn, train_val_index=None,
-                 seed=1, transform=None):
+                 seed=1, transform=[]):
         """
 
         :param dataset_dir: path to training data
