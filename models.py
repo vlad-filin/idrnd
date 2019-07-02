@@ -32,3 +32,22 @@ class TorchVisionNet_with_exctractor(nn.Module):
         return x
 
 
+class TorchVisionNet_with_2exctractor(nn.Module):
+
+    def __init__(self, Net, extractorNT, extractorT):
+        super(TorchVisionNet_with_2exctractor, self).__init__()
+
+        self.Net = Net
+        self.extractorNT = extractorNT
+        self.extractorT = extractorT
+
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, x):
+        with torch.no_grad():
+            x0 = self.extractorNT(x)
+        x1 = self.extractorT(x)
+        feature = torch.stack((x0, x1), dim=1)
+        x = self.Net(feature)
+        # x = self.softmax(x)
+        return x
