@@ -9,7 +9,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from MobileNetV2_torchvision import MobileNetV2
 
-from models import TorchVisionNet_with_exctractor
+from models import TorchVisionNet_with_2exctractor
 import DftSpectrogram_pytorch
 from dataset import VoiceAntiSpoofDataset
 from utils import read_fromBaseline, read_scipy
@@ -30,7 +30,7 @@ dft_conf1 = {"length": 512,
             "shift": 256,
             "nfft": 512,
             "mode": 'log',
-            "normalize_feature": True,
+            "normalize_feature": False,
             "trainable":True}
 
 
@@ -39,7 +39,7 @@ dft_pytorchT = DftSpectrogram_pytorch.DftSpectrogram(**dft_conf1)
 MN2 = MobileNetV2()
 MN2.classifier[1] = nn.Linear(1280, 2, bias=False)
 MN2.features[0][0] = nn.Conv2d(2, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
-model = TorchVisionNet_with_exctractor(MN2, dft_pytorchNT, dft_pytorchT).to('cuda')
+model = TorchVisionNet_with_2exctractor(MN2, dft_pytorchNT, dft_pytorchT).to('cuda')
 
 
 dataset_dir = '/home/data/datasets/idrnd/Training_Data/'

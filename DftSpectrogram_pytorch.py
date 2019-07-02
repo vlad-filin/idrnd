@@ -121,7 +121,7 @@ class DftSpectrogram(nn.Module):
         elif self.mode == "complex":
             fft = torch.concatenate((real_part, imag_part), axis=-1)
         elif self.mode == "log":
-            fft = torch.clamp(torch.sqrt(real_part ** 2 + imag_part ** 2), min=self.epsilon)
+            fft = torch.sqrt(real_part ** 2 + imag_part ** 2 + self.epsilon)
             fft = torch.log(fft) / np.log(10)
 
         fft = fft.permute((0, 3, 1, 2,))[:, :, :self.nfft // 2, :]

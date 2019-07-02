@@ -9,7 +9,7 @@ import os
 from kekas.callbacks import Callback
 
 
-def read_fromBaseline(wav_path, length=66000, random_start=False):
+def read_fromBaseline(wav_path, length=100000, random_start=False):
     try:
         x, sr = librosa.load(wav_path, sr=None)
         assert sr == 16000
@@ -54,6 +54,7 @@ def step_fn(model: torch.nn.Module,
 class ScoreCallback(Callback):
     def __init__(self, preds_key, target_key, metric_fn, path_to_save='eer_checkpoints',
                  logdir="tensorboard"):
+
         self.preds_key = preds_key
         self.target_key = target_key
         self.human_probs_for_human = []
@@ -61,11 +62,12 @@ class ScoreCallback(Callback):
         self.softmax = nn.Softmax(dim=1)
         self.metric_fn = metric_fn
         self.top3_scores = []
-        self.path = path_to_save
+        self.path = Path(path_to_save)
         self.logdir = Path(logdir)
 
     def on_train_begin(self, state) -> None:
         self.logdir.mkdir(exist_ok=True)
+        self.path.mkdir(exist_ok=True)
         self.val_writer = SummaryWriter(str(self.logdir / "val_eer"))
 
     def on_batch_end(self, i, state) -> None:
