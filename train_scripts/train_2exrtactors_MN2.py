@@ -30,7 +30,7 @@ dft_conf1 = {"length": 512,
             "shift": 256,
             "nfft": 512,
             "mode": 'log',
-            "normalize_feature": True,
+            "normalize_feature": False,
             "trainable":True}
 
 
