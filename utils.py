@@ -103,7 +103,7 @@ class ScoreCallback(Callback):
             else:
                 if eer < self.top3_scores[0][0]:
                     os.remove(self.top3_scores[0][1])
-                    self.top3_scores.pop(0)
+                    self.top3_scores.pop(-1)
                     torch.save(state.core.model.state_dict(), name)
                     self.top3_scores.append((round(eer, 4), name))
                     self.top3_scores = sorted(self.top3_scores, key=lambda item: item[0])

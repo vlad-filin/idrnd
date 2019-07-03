@@ -1,5 +1,5 @@
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+#os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 import sys
 sys.path.insert(0, "../")
 import numpy as np
@@ -59,10 +59,10 @@ len(dataset), len(dataset_val), len(np.unique(dataset.data))
 
 
 dataowner = DataOwner(dataloader, val_dl, None)
-weights = torch.tensor([5, 1.25])
-weights = weights / weights.sum()
-weights = weights.to('cuda')
-criterion = nn.CrossEntropyLoss(weight=weights)
+#weights = torch.tensor([5, 1.25])
+#weights = weights / weights.sum()
+#weights = weights.to('cuda')
+criterion = nn.CrossEntropyLoss()
 
 
 keker = Keker(model=model,
@@ -72,16 +72,18 @@ keker = Keker(model=model,
               target_key="label",                 # remember, we defined it in the reader_fn for DataKek?
               opt=torch.optim.Adam,               # optimizer class. if note specifiyng,
                                                   # an SGD is using by default
-              opt_params={"weight_decay": 1e-3},
-              callbacks=[ScoreCallback('preds', 'label', compute_err, 'checkpoints_3rdBL')],
+              opt_params={"weight_decay": 1e-4},
+              callbacks=[ScoreCallback('preds', 'label', compute_err, 'checkpoints_1cycle_2ext')],
                  metrics={"acc": accuracy})
 
-keker.kek(lr=1e-3,
-          epochs=50,
-          sched=torch.optim.lr_scheduler.MultiStepLR,       # pytorch lr scheduler class
-          sched_params={"milestones": [15, 25, 40], "gamma": 0.5},
-         cp_saver_params={
-              "savedir": "./checkpoints_3rdBL",
-         "metric":"acc",
-         "mode":'max'},
-          logdir="tensorboard")
+
+keker.kek_one_cycle(max_lr=1e-2,                  # the maximum learning rate
+                    cycle_len=30,                  # number of epochs, actually, but not exactly
+                    momentum_range=(0.95, 0.85),  # range of momentum changes
+                    div_factor=250,                # max_lr / min_lr
+                    increase_fraction=0.3,
+                    cp_saver_params={
+                    "savedir": "./checkpoints_2ext1cycle",
+                    "metric":"acc",
+                    "mode":'max'},
+                     logdir='tensorboard/2ext1cycle')
