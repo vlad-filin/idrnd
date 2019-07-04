@@ -44,11 +44,15 @@ model = TorchVisionNet_with_2exctractor(MN2, dft_pytorchNT, dft_pytorchT).to('cu
 
 dataset_dir = '../../Training_Data/'
 print("Num samples:", len(glob.glob(os.path.join(dataset_dir, '**/*.wav'), recursive=True)))
-dataset = VoiceAntiSpoofDataset(dataset_dir, 'all', read_scipy,
+dataset = VoiceAntiSpoofDataset(dataset_dir, 'train', read_scipy,
                                 transform=[lambda x: x[None, ...].astype(np.float32)])
+dataset_val = VoiceAntiSpoofDataset(dataset_dir, 'val', read_scipy,
+                                transform=[lambda x: x[None, ...].astype(np.float32)])
+"""
 dataset_val_dir = '../../validationASV/'
 dataset_val = VoiceAntiSpoofDataset(dataset_val_dir, 'all', read_scipy,
                                    transform=[lambda x: x[None, ...].astype(np.float32)])
+"""
 batch_size = 64
 num_workers = 16
 
