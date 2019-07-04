@@ -7,7 +7,7 @@ import torch.nn as nn
 from pathlib import Path
 import os
 from kekas.callbacks import Callback
-
+import pdb
 
 def read_fromBaseline(wav_path, length=100000, random_start=False):
     try:
@@ -72,6 +72,7 @@ class ScoreCallback(Callback):
 
     def on_batch_end(self, i, state) -> None:
         if state.core.mode == "val":
+
             preds = state.core.out[self.preds_key]
             preds = self.softmax(preds).cpu().numpy()
             targets = state.core.batch[self.target_key].cpu().numpy()

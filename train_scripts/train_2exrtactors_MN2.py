@@ -56,7 +56,10 @@ dataset_val = VoiceAntiSpoofDataset(dataset_val_dir, 'all', read_scipy,
 batch_size = 64
 num_workers = 16
 
-
+#dataset.data = dataset.data[0:24] + dataset.data[-24:]
+#dataset.labels = dataset.labels[0:24]  + dataset.labels[-24:]
+#dataset_val.data = dataset_val.data[0:24] + dataset_val.data[-24:]
+#dataset_val.labels = dataset_val.labels[0:24]  + dataset_val.labels[-24:]
 dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers, shuffle=True)
 val_dl = DataLoader(dataset_val, batch_size=batch_size, num_workers=num_workers, shuffle=False)
 len(dataset), len(dataset_val), len(np.unique(dataset.data))

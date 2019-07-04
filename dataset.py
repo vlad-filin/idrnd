@@ -21,6 +21,7 @@ class VoiceAntiSpoofDataset(Dataset):
         self.reading_fn = reading_fn
         if train_val_index is None:
             wav_paths = sorted(glob.glob(os.path.join(dataset_dir, '**/*.wav'), recursive=True))
+            random.shuffle(wav_paths)
             train_paths = wav_paths[:40000]
             val_paths = wav_paths[40000:]
 
@@ -32,14 +33,16 @@ class VoiceAntiSpoofDataset(Dataset):
             if mode == 'train':
                 self.labels = [0] * len(train_human) + [1] * len(train_spoof)
                 self.data = train_human + train_spoof
+                print("len train", len(self.data))
             elif mode == 'val':
                 self.labels = [0] * len(val_human) + [1] * len(val_spoof)
                 self.data = val_human + val_spoof
+                print("len val", len(val_human), len(val_spoof))
             else:
                 human = sorted(filter(lambda path: "human" in path, wav_paths))
-                print(len(human), "qq")
+                print(len(human), "len human")
                 spoof = sorted(filter(lambda path: "spoof" in path, wav_paths))
-                print(len(spoof), "qqq")
+                print(len(spoof), "len spoof")
                 self.labels = ([0] * len(human) + [1] * len(spoof))
                 self.data = human + spoof
         else:
