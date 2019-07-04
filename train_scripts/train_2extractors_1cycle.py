@@ -25,7 +25,7 @@ dft_conf0 = {"length": 512,
             "shift": 256,
             "nfft": 512,
             "mode": 'log',
-            "normalize_feature": True}
+            "normalize_feature": False}
 dft_conf1 = {"length": 512,
             "shift": 256,
             "nfft": 512,
@@ -72,7 +72,7 @@ keker = Keker(model=model,
               target_key="label",                 # remember, we defined it in the reader_fn for DataKek?
               opt=torch.optim.Adam,               # optimizer class. if note specifiyng,
                                                   # an SGD is using by default
-              opt_params={"weight_decay": 1e-4},
+              opt_params={"weight_decay": 1e-3},
               callbacks=[ScoreCallback('preds', 'label', compute_err, 'checkpoints_1cycle_2ext')],
                  metrics={"acc": accuracy})
 
@@ -86,4 +86,4 @@ keker.kek_one_cycle(max_lr=1e-2,                  # the maximum learning rate
                     "savedir": "./checkpoints_2ext1cycle",
                     "metric":"acc",
                     "mode":'max'},
-                     logdir='tensorboard/2ext1cycle')
+                     logdir='tensorboard/2ext1cycle_')

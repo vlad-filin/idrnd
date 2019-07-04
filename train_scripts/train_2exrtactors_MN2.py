@@ -25,7 +25,7 @@ dft_conf0 = {"length": 512,
             "shift": 256,
             "nfft": 512,
             "mode": 'log',
-            "normalize_feature": True}
+            "normalize_feature": False}
 dft_conf1 = {"length": 512,
             "shift": 256,
             "nfft": 512,
@@ -46,7 +46,7 @@ dataset_dir = '../../Training_Data/'
 print("Num samples:", len(glob.glob(os.path.join(dataset_dir, '**/*.wav'), recursive=True)))
 dataset = VoiceAntiSpoofDataset(dataset_dir, 'all', read_scipy,
                                 transform=[lambda x: x[None, ...].astype(np.float32)])
-dataset_val_dir = '../..//validationASV/'
+dataset_val_dir = '../../validationASV/'
 dataset_val = VoiceAntiSpoofDataset(dataset_val_dir, 'all', read_scipy,
                                    transform=[lambda x: x[None, ...].astype(np.float32)])
 batch_size = 64
@@ -73,7 +73,8 @@ keker = Keker(model=model,
               opt=torch.optim.Adam,               # optimizer class. if note specifiyng,
                                                   # an SGD is using by default
               opt_params={"weight_decay": 1e-3},
-              callbacks=[ScoreCallback('preds', 'label', compute_err, 'checkpoints_3rdBL')],
+              callbacks=[ScoreCallback('preds', 'label', compute_err,
+                                       'checkpoints_3rdBL', logdir='tensorboard/tensorboard4BL')],
                  metrics={"acc": accuracy})
 
 keker.kek(lr=1e-3,
@@ -81,7 +82,7 @@ keker.kek(lr=1e-3,
           sched=torch.optim.lr_scheduler.MultiStepLR,       # pytorch lr scheduler class
           sched_params={"milestones": [15, 25, 40], "gamma": 0.5},
          cp_saver_params={
-              "savedir": "./checkpoints_3rdBL",
+              "savedir": "./checkpoints_4BL",
          "metric":"acc",
          "mode":'max'},
-          logdir="tensorboard")
+          logdir="tensorboard/tensorboard4BL")
