@@ -2,7 +2,8 @@ from torch.utils.data import Dataset
 import glob
 import os
 import random
-
+from librosa.feature import mfcc
+import pdb
 
 class VoiceAntiSpoofDataset(Dataset):
     def __init__(self, dataset_dir, mode, reading_fn, train_val_index=None,
@@ -58,10 +59,13 @@ class VoiceAntiSpoofDataset(Dataset):
 
     def __getitem__(self, idx):
         data = self.reading_fn(self.data[idx])
+        mfcc_data = mfcc(data, sr=16000, n_mfcc=256, n_mels=512)
         for t in self.transform:
             data = t(data)
+            mfcc_data = t(mfcc_data)
+
         label = self.labels[idx]
-        return {'data': data, 'label': label}
+        return {'data': data, 'mfcc': mfcc_data, 'label': label}
 
     def __len__(self):
         return len(self.data)
