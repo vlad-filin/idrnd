@@ -58,8 +58,8 @@ dataset_val = VoiceAntiSpoofDataset(dataset_val_dir, 'all', read_scipy,
                                    transform=[lambda x: x[None, ...].astype(np.float32)])
 """
 sampler = torch.utils.data.sampler.WeightedRandomSampler(dataset.weights, len(dataset.weights))
-batch_size = 1
-num_workers = 1
+batch_size = 24
+num_workers = 8
 
 #dataset.data = dataset.data[0:24] + dataset.data[-24:]
 #dataset.labels = dataset.labels[0:24]  + dataset.labels[-24:]
