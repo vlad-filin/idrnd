@@ -15,7 +15,7 @@ def read_fromBaseline(wav_path, length=100000, random_start=False):
         return None
 
 
-def read_scipy(wav_path, length=160000):
+def read_scipy(wav_path, length=100000):
     try:
         sr, x = wavfile.read(wav_path)
         assert sr == 16000

@@ -59,7 +59,7 @@ class VoiceAntiSpoofDataset(Dataset):
 
     def __getitem__(self, idx):
         data = self.reading_fn(self.data[idx])
-        mfcc_data = mfcc(data, sr=16000, n_mfcc=256, n_mels=512)
+        mfcc_data = mfcc(data, sr=16000, n_mfcc=128)
         for t in self.transform:
             data = t(data)
             mfcc_data = t(mfcc_data)
