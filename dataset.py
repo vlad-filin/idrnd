@@ -33,11 +33,16 @@ class VoiceAntiSpoofDataset(Dataset):
             if mode == 'train':
                 self.labels = [0] * len(train_human) + [1] * len(train_spoof)
                 self.data = train_human + train_spoof
+
+                weight_h = len(self.data) / len(train_human)
+                weight_s = len(self.data) / len(train_spoof)
+                self.weights = [weight_h] * len(train_human) + [weight_s] * len(train_spoof)
                 print("len train", len(self.data))
             elif mode == 'val':
                 self.labels = [0] * len(val_human) + [1] * len(val_spoof)
                 self.data = val_human + val_spoof
                 print("len val", len(val_human), len(val_spoof))
+                self.weights = None
             else:
                 human = sorted(filter(lambda path: "human" in path, wav_paths))
                 print(len(human), "len human")
@@ -45,6 +50,9 @@ class VoiceAntiSpoofDataset(Dataset):
                 print(len(spoof), "len spoof")
                 self.labels = ([0] * len(human) + [1] * len(spoof))
                 self.data = human + spoof
+                weight_h = len(self.data) / len(human)
+                weight_s = len(self.data) / len(spoof)
+                self.weights = [weight_h] * len(human) + [weight_s] * len(spoof)
         else:
             raise NotImplementedError
 

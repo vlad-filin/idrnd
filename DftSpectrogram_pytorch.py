@@ -2,6 +2,8 @@ import warnings
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.autograd as autograd
+
 
 class DftSpectrogram(nn.Module):
     def __init__(self,
@@ -129,9 +131,17 @@ class DftSpectrogram(nn.Module):
             if self.mode == "complex":
                 warnings.warn("spectrum normalization will not applied with mode == \"complex\"")
             else:
-                fft = (fft - torch.mean(fft, dim=2, keepdim=True)) / (
-                            fft.std(dim=2, keepdim=True, unbiased=False) + self.epsilon)
-
+                #pdb.set_trace()
+                std = torch.sqrt(torch.clamp(((fft - torch.mean(fft, dim=2, keepdim=True))
+                                              ** 2).sum(dim=2, keepdim=True) / fft.shape[2], min=self.epsilon ** 2))
+                fft = (fft - torch.mean(fft, dim=2, keepdim=True)) / (std)
+                """
+                    if fft.std(dim=2, keepdim=True, unbiased=False).sum() < 1e-10:
+                        pdb.set_trace()
+                
+                    fft = (fft - torch.mean(fft, dim=2, keepdim=True)) / (
+                                fft.std(dim=2, keepdim=True, unbiased=False) + self.epsilon)
+                """
         # fft = fft[:, self.bottom:-1 * self.top, :, :]
 
         return fft
