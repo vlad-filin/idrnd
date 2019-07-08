@@ -58,8 +58,8 @@ dataset_val = VoiceAntiSpoofDataset(dataset_val_dir, 'all', read_scipy,
                                    transform=[lambda x: x[None, ...].astype(np.float32)])
 """
 sampler = torch.utils.data.sampler.WeightedRandomSampler(dataset.weights, len(dataset.weights))
-batch_size = 24
-num_workers = 8
+batch_size = 1
+num_workers = 1
 
 #dataset.data = dataset.data[0:24] + dataset.data[-24:]
 #dataset.labels = dataset.labels[0:24]  + dataset.labels[-24:]
@@ -83,7 +83,7 @@ keker = Keker(model=model,
                                                   # an SGD is using by default
               opt_params={"weight_decay": 1e-3},
               callbacks=[ScoreCallback('preds', 'label', compute_err,
-                                       'checkpoints_3rdBL', logdir='tensorboard/tensorboard4BL')],
+                                       'checkpoints/2branch', logdir='tensorboard/2branch')],
                  metrics={"acc": accuracy})
 with autograd.detect_anomaly():
     keker.kek(lr=1e-3,
@@ -91,7 +91,24 @@ with autograd.detect_anomaly():
               sched=torch.optim.lr_scheduler.MultiStepLR,       # pytorch lr scheduler class
               sched_params={"milestones": [10, 15, 25], "gamma": 0.5},
              cp_saver_params={
-                  "savedir": "./checkpoints_4BL",
+                  "savedir": "checkpoints/2branch",
              "metric":"acc",
              "mode":'max'},
-              logdir="tensorboard/tensorboard4BL")
+              logdir="tensorboard/2branch")
+
+
+torch.save(model.state_dict(), "")
+
+from twilio.rest import Client
+
+# client credentials are read from TWILIO_ACCOUNT_SID and AUTH_TOKEN
+client = Client()
+
+# this is the Twilio sandbox testing number
+from_whatsapp_number='whatsapp:+14155238886'
+# replace this number with your own WhatsApp Messaging number
+to_whatsapp_number='whatsapp:+79858139901'
+
+client.messages.create(body='script done, virubai tachku',
+                               from_=from_whatsapp_number,
+                                                      to=to_whatsapp_number)
