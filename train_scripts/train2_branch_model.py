@@ -48,15 +48,16 @@ model = TwoBranchModel(MN2_MFCC, MN2_Dft, dft_pytorchNT, dft_pytorchT, num_featu
 
 dataset_dir = '../../Training_Data/'
 print("Num samples:", len(glob.glob(os.path.join(dataset_dir, '**/*.wav'), recursive=True)))
-dataset = VoiceAntiSpoofDataset(dataset_dir, 'train', read_scipy,
-                                transform=[lambda x: x[None, ...].astype(np.float32)])
+dataset = VoiceAntiSpoofDataset(dataset_dir, 'all', read_scipy,
+                               transform=[lambda x: x[None, ...].astype(np.float32)])
+"""
 dataset_val = VoiceAntiSpoofDataset(dataset_dir, 'val', read_scipy,
-                                transform=[lambda x: x[None, ...].astype(np.float32)])
+                                 transform=[lambda x: x[None, ...].astype(np.float32)])
 """
 dataset_val_dir = '../../validationASV/'
 dataset_val = VoiceAntiSpoofDataset(dataset_val_dir, 'all', read_scipy,
                                    transform=[lambda x: x[None, ...].astype(np.float32)])
-"""
+
 sampler = torch.utils.data.sampler.WeightedRandomSampler(dataset.weights, len(dataset.weights))
 batch_size = 24
 num_workers = 8
@@ -83,18 +84,18 @@ keker = Keker(model=model,
                                                   # an SGD is using by default
               opt_params={"weight_decay": 1e-3},
               callbacks=[ScoreCallback('preds', 'label', compute_err,
-                                       'checkpoints/2branch', logdir='tensorboard/2branch')],
+                                       'checkpoints/2branch_all', logdir='tensorboard/2branch_all')],
                  metrics={"acc": accuracy})
 with autograd.detect_anomaly():
     keker.kek(lr=1e-3,
-              epochs=30,
+              epochs=50,
               sched=torch.optim.lr_scheduler.MultiStepLR,       # pytorch lr scheduler class
-              sched_params={"milestones": [10, 15, 25], "gamma": 0.5},
+              sched_params={"milestones": [15, 25, 35, 45], "gamma": 0.5},
              cp_saver_params={
-                  "savedir": "checkpoints/2branch",
+                  "savedir": "checkpoints/2branch_all",
              "metric":"acc",
              "mode":'max'},
-              logdir="tensorboard/2branch")
+              logdir="tensorboard/2branch_all")
 
 
 torch.save(model.state_dict(), "")
