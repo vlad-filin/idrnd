@@ -26,3 +26,12 @@ def read_scipy(wav_path, length=100000):
     except Exception as e:
         print("Error with getting feature from %s: %s" % (wav_path, str(e)))
         return None
+
+def read_test(wav_path):
+    try:
+        sr, x = wavfile.read(wav_path)
+        assert sr == 16000
+        return x / np.max(np.abs(x))
+    except Exception as e:
+        print("Error with getting feature from %s: %s" % (wav_path, str(e)))
+        return None
