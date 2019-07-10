@@ -7,7 +7,7 @@ import pdb
 
 class VoiceAntiSpoofDataset(Dataset):
     def __init__(self, dataset_dir, mode, reading_fn, train_val_index=None,
-                 seed=1, transform=[]):
+                 seed=1, transform=[], add_TData=None):
         """
 
         :param dataset_dir: path to training data
@@ -54,6 +54,17 @@ class VoiceAntiSpoofDataset(Dataset):
                 weight_h = len(self.data) / len(human)
                 weight_s = len(self.data) / len(spoof)
                 self.weights = [weight_h] * len(human) + [weight_s] * len(spoof)
+            if add_TData is not None:
+                wav_paths = sorted(glob.glob(os.path.join(dataset_dir, '**/*.wav'), recursive=True))
+                human = sorted(filter(lambda path: "human" in path, wav_paths))
+                print(len(human), "len additional human")
+                spoof = sorted(filter(lambda path: "spoof" in path, wav_paths))
+                print(len(spoof), "len spoof")
+                self.data += human + spoof
+                self.labels += ([0] * len(human) + [1] * len(spoof))
+                self.weights += [self.weights[0]] * len(human) + [self.weights[-1]] * len(spoof)
+
+
         else:
             raise NotImplementedError
 
