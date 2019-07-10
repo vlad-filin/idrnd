@@ -23,7 +23,7 @@ def step_fn(model: torch.nn.Module,
 
     voice = batch['data']
     if 'mfcc' in batch.keys():
-        return model(voice, batch['mfcc'])
+        return model(voice, batch['mfcc'], batch['reverse'], batch['mfcc_reverse'])
     return model(voice)
 
 
@@ -73,7 +73,7 @@ class ScoreCallback(Callback):
             self.val_writer.add_scalar("eer", eer, global_step=epoch)
             name = str(round(eer, 4)) + "." + str(epoch) + '.pt'
             name = os.path.join(self.path, name)
-            if len(self.top3_scores) < 3:
+            if len(self.top3_scores) < 15:
                 torch.save(state.core.model.state_dict(), name)
                 self.top3_scores.append((round(eer, 4), name))
                 self.top3_scores = sorted(self.top3_scores, key=lambda item: item[0])

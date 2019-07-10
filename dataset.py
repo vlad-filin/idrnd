@@ -70,13 +70,17 @@ class VoiceAntiSpoofDataset(Dataset):
 
     def __getitem__(self, idx):
         data = self.reading_fn(self.data[idx])
+        reverse = data[::-1]
         mfcc_data = mfcc(data, sr=16000, n_mfcc=128)
+        mfcc_data_reverse = mfcc(reverse, sr=16000, n_mfcc=128)
         for t in self.transform:
             data = t(data)
             mfcc_data = t(mfcc_data)
-
+            reverse = t(reverse)
+            mfcc_data_reverse = t(mfcc_data_reverse)
         label = self.labels[idx]
-        return {'data': data, 'mfcc': mfcc_data, 'label': label}
+        return {'data': data, 'mfcc': mfcc_data, 'label': label,
+                'reverse': reverse, "mfcc_reverse": mfcc_data_reverse}
 
     def __len__(self):
         return len(self.data)

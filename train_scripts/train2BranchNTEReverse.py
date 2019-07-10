@@ -9,7 +9,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from MobileNetV2_torchvision import MobileNetV2
 
-from models import TwoBranchModelNTE
+from models import TwoBranchModelNTE_reverse
 from dataset import VoiceAntiSpoofDataset
 from reading_utils import read_fromBaseline, read_scipy
 from Metrics import compute_err
@@ -32,10 +32,10 @@ dft_conf0 = {"length": 512,
 dft_pytorchNT = DftSpectrogram_pytorch.DftSpectrogram(**dft_conf0)
 
 MN2_Dft = MobileNetV2()
-MN2_Dft.features[0][0] = nn.Conv2d(1, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+MN2_Dft.features[0][0] = nn.Conv2d(2, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
 MN2_MFCC = MobileNetV2()
-MN2_MFCC.features[0][0] = nn.Conv2d(1, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
-model = TwoBranchModelNTE(MN2_MFCC, MN2_Dft, dft_pytorchNT, num_features=2560).to('cuda')
+MN2_MFCC.features[0][0] = nn.Conv2d(2, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+model = TwoBranchModelNTE_reverse(MN2_MFCC, MN2_Dft, dft_pytorchNT, num_features=2560).to('cuda')
 
 
 
@@ -55,8 +55,8 @@ dataset_val = VoiceAntiSpoofDataset(dataset_val_dir, 'all', read_scipy,
                                    transform=[lambda x: x[None, ...].astype(np.float32)])
 
 sampler = torch.utils.data.sampler.WeightedRandomSampler(dataset.weights, len(dataset.weights))
-batch_size = 32
-num_workers = 8
+batch_size = 1
+num_workers = 1
 
 #dataset.data = dataset.data[0:24] + dataset.data[-24:]
 #dataset.labels = dataset.labels[0:24]  + dataset.labels[-24:]
@@ -80,8 +80,7 @@ keker = Keker(model=model,
                                                   # an SGD is using by default
               opt_params={"weight_decay": 1e-3},
               callbacks=[ScoreCallback('preds', 'label', compute_err,
-                                       'checkpoints/2branch_NTE_addData_reverse',
-                                       logdir='tensorboard/2branch_NTE_addData_reverse')],
+                                       'checkpoints/2branch_NTE_addData', logdir='tensorboard/2branch_NTE_addData')],
                  metrics={"acc": accuracy})
 with autograd.detect_anomaly():
     keker.kek(lr=1e-3,
@@ -89,10 +88,10 @@ with autograd.detect_anomaly():
               sched=torch.optim.lr_scheduler.MultiStepLR,       # pytorch lr scheduler class
               sched_params={"milestones": [15, 25, 35, 45], "gamma": 0.5},
              cp_saver_params={
-                  "savedir": "checkpoints/2branch_NTE_addData_reverse",
+                  "savedir": "checkpoints/2branch_NTE_addData",
              "metric":"acc",
              "mode":'max'},
-              logdir="tensorboard/2branch_NTE_addData_reverse")
+              logdir="tensorboard/2branch_NTE_addData")
 
 
 torch.save(model.state_dict(), "checkpoints/2branch_NTE/final.pt")
