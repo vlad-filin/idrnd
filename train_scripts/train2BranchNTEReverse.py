@@ -50,13 +50,13 @@ dataset = VoiceAntiSpoofDataset(dataset_dir, 'all', read_scipy,
 dataset_val = VoiceAntiSpoofDataset(dataset_dir, 'val', read_scipy,
                                  transform=[lambda x: x[None, ...].astype(np.float32)])
 """
-dataset_val_dir = '../../validationASV/'
+dataset_val_dir = '../../ASV2017DEV/'
 dataset_val = VoiceAntiSpoofDataset(dataset_val_dir, 'all', read_scipy,
                                    transform=[lambda x: x[None, ...].astype(np.float32)])
 
 sampler = torch.utils.data.sampler.WeightedRandomSampler(dataset.weights, len(dataset.weights))
-batch_size = 1
-num_workers = 1
+batch_size = 128
+num_workers = 16
 
 #dataset.data = dataset.data[0:24] + dataset.data[-24:]
 #dataset.labels = dataset.labels[0:24]  + dataset.labels[-24:]
@@ -80,7 +80,8 @@ keker = Keker(model=model,
                                                   # an SGD is using by default
               opt_params={"weight_decay": 1e-3},
               callbacks=[ScoreCallback('preds', 'label', compute_err,
-                                       'checkpoints/2branch_NTE_addData', logdir='tensorboard/2branch_NTE_addData')],
+                                       'checkpoints/2branch_NTE_addData_reverse',
+                                       logdir='tensorboard/2branch_NTE_addData_reverse')],
                  metrics={"acc": accuracy})
 with autograd.detect_anomaly():
     keker.kek(lr=1e-3,
@@ -88,10 +89,10 @@ with autograd.detect_anomaly():
               sched=torch.optim.lr_scheduler.MultiStepLR,       # pytorch lr scheduler class
               sched_params={"milestones": [15, 25, 35, 45], "gamma": 0.5},
              cp_saver_params={
-                  "savedir": "checkpoints/2branch_NTE_addData",
+                  "savedir": "checkpoints/2branch_NTE_addData_reverse",
              "metric":"acc",
              "mode":'max'},
-              logdir="tensorboard/2branch_NTE_addData")
+              logdir="tensorboard/2branch_NTE_addData_reverse")
 
 
-torch.save(model.state_dict(), "checkpoints/2branch_NTE/final.pt")
+torch.save(model.state_dict(), "checkpoints/2branch_NTE_addData_reverse/final.pt")
