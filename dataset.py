@@ -3,6 +3,7 @@ import glob
 import os
 import random
 from librosa.feature import mfcc
+import numpy as np
 import pdb
 
 class VoiceAntiSpoofDataset(Dataset):
@@ -71,6 +72,41 @@ class VoiceAntiSpoofDataset(Dataset):
     def __getitem__(self, idx):
         data = self.reading_fn(self.data[idx])
         mfcc_data = mfcc(data, sr=16000, n_mfcc=128)
+        for t in self.transform:
+            data = t(data)
+            mfcc_data = t(mfcc_data)
+
+        label = self.labels[idx]
+        return {'data': data, 'mfcc': mfcc_data, 'label': label}
+
+    def __len__(self):
+        return len(self.data)
+
+
+class MixDataset(Dataset):
+    def __init__(self, paths, reading_fn, mfcc_function, transform=[]):
+        """
+        :param paths: list of absolute path to files
+
+        :param reading_fn:  function to read .waf files, returns np.arrays
+        :param mfcc_function: function to construct mfcc
+        :param transform:  list of transforms to apply to output data
+        """
+        super(MixDataset, self).__init__()
+        ishuman = [1 if '/human/' in fp else 0 for fp in paths]
+        isspoof = [1 if '/spoof/' in fp else 0 for fp in paths]
+        assert all(np.logical_xor(ishuman, isspoof)), " Wrong paths given"
+        self.data = paths
+        self.labels = isspoof
+        self.trasform = transform
+        self.mfcc_func = mfcc_function
+        weights_h = len(self.data) / (len(self.data) - sum(isspoof))
+        weights_s = len(self.data) / sum(isspoof)
+        print('class weights:', (weights_h, weights_s))
+        self.weights = [weights_s if l == 1 else weights_h for l in self.labels]
+    def __getitem__(self, idx):
+        data = self.reading_fn(self.data[idx])
+        mfcc_data = self.mfcc_func(data)
         for t in self.transform:
             data = t(data)
             mfcc_data = t(mfcc_data)

@@ -7,7 +7,7 @@ import torch.nn as nn
 from pathlib import Path
 import os
 from kekas.callbacks import Callback
-
+import os
 
 def step_fn(model: torch.nn.Module,
             batch: torch.Tensor) -> torch.Tensor:
@@ -88,3 +88,7 @@ class ScoreCallback(Callback):
 
 def exp_decay(epoch, k=0.1, initial_rate=0.0001):
     return initial_rate * np.exp(-k * epoch)
+
+def jointer(abs_path, list_rel_path):
+    res_path = [os.path.join(abs_path, rp) for rp in list_rel_path]
+    return res_path
