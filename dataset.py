@@ -71,7 +71,7 @@ class VoiceAntiSpoofDataset(Dataset):
 
     def __getitem__(self, idx):
         data = self.reading_fn(self.data[idx])
-        mfcc_data = mfcc(data, sr=16000, n_mfcc=128)
+        mfcc_data = mfcc(data, sr=16000, n_mfcc=32)
         for t in self.transform:
             data = t(data)
             mfcc_data = t(mfcc_data)
@@ -103,11 +103,14 @@ class MixDataset(Dataset):
         self.mfcc_func = mfcc_function
         weights_h = len(self.data) / (len(self.data) - sum(isspoof))
         weights_s = len(self.data) / sum(isspoof)
-        print('class weights:', (weights_h, weights_s))
+        print('#class weights:', (weights_h, weights_s))
         self.weights = [weights_s if l == 1 else weights_h for l in self.labels]
 
     def __getitem__(self, idx):
+        print("in item")
         data = self.reading_fn(self.data[idx])
+        assert False, print(type(data))
+        print(type(data))
         mfcc_data = self.mfcc_func(data)
         for t in self.transform:
             data = t(data)
