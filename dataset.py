@@ -56,7 +56,7 @@ class VoiceAntiSpoofDataset(Dataset):
                 weight_s = len(self.data) / len(spoof)
                 self.weights = [weight_h] * len(human) + [weight_s] * len(spoof)
             if add_TData is not None:
-                wav_paths = sorted(glob.glob(os.path.join(dataset_dir, '**/*.wav'), recursive=True))
+                wav_paths = sorted(glob.glob(os.path.join(add_TData, '**/*.wav'), recursive=True))
                 human = sorted(filter(lambda path: "human" in path, wav_paths))
                 print(len(human), "len additional human")
                 spoof = sorted(filter(lambda path: "spoof" in path, wav_paths))

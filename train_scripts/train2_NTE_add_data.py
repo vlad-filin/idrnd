@@ -7,7 +7,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from MobileNetV2_torchvision import MobileNetV2
+from densenet import densenet121
 
 from models import TwoBranchModelNTE
 from dataset import VoiceAntiSpoofDataset
@@ -31,11 +31,11 @@ dft_conf0 = {"length": 512,
 
 dft_pytorchNT = DftSpectrogram_pytorch.DftSpectrogram(**dft_conf0)
 
-MN2_Dft = MobileNetV2()
-MN2_Dft.features[0][0] = nn.Conv2d(1, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
-MN2_MFCC = MobileNetV2()
-MN2_MFCC.features[0][0] = nn.Conv2d(1, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
-model = TwoBranchModelNTE(MN2_MFCC, MN2_Dft, dft_pytorchNT, num_features=2560).to('cuda')
+DN2_Dft = densenet121()
+DN2_Dft.features[0] = nn.Conv2d(1, 64, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+DN2_MFCC = densenet121()
+DN2_MFCC.features[0] = nn.Conv2d(1, 64, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+model = TwoBranchModelNTE(DN2_MFCC, DN2_Dft, dft_pytorchNT, num_features=2048).to('cuda')
 
 
 
@@ -45,7 +45,7 @@ add_data_dir = '../../validationASV/'
 print("Num samples:", len(glob.glob(os.path.join(dataset_dir, '**/*.wav'), recursive=True)))
 dataset = VoiceAntiSpoofDataset(dataset_dir, 'all', read_scipy,
                                transform=[lambda x: x[None, ...].astype(np.float32)],
-                                add)
+                                add_TData=add_data_dir)
 """
 dataset_val = VoiceAntiSpoofDataset(dataset_dir, 'val', read_scipy,
                                  transform=[lambda x: x[None, ...].astype(np.float32)])
@@ -56,7 +56,7 @@ dataset_val = VoiceAntiSpoofDataset(dataset_val_dir, 'all', read_scipy,
 
 sampler = torch.utils.data.sampler.WeightedRandomSampler(dataset.weights, len(dataset.weights))
 batch_size = 32
-num_workers = 8
+num_workers = 16
 
 #dataset.data = dataset.data[0:24] + dataset.data[-24:]
 #dataset.labels = dataset.labels[0:24]  + dataset.labels[-24:]
