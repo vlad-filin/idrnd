@@ -45,12 +45,12 @@ add_data_dir = '../../validationASV/'
 print("Num samples:", len(glob.glob(os.path.join(dataset_dir, '**/*.wav'), recursive=True)))
 dataset = VoiceAntiSpoofDataset(dataset_dir, 'all', read_scipy,
                                transform=[lambda x: x[None, ...].astype(np.float32)],
-                                add)
+    )
 """
 dataset_val = VoiceAntiSpoofDataset(dataset_dir, 'val', read_scipy,
                                  transform=[lambda x: x[None, ...].astype(np.float32)])
 """
-dataset_val_dir = '../../validationASV/'
+dataset_val_dir = '../../ASV2017DEV/'
 dataset_val = VoiceAntiSpoofDataset(dataset_val_dir, 'all', read_scipy,
                                    transform=[lambda x: x[None, ...].astype(np.float32)])
 
