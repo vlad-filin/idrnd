@@ -46,7 +46,7 @@ def universe_reader(file_path, length=None):
             assert sr == 16000
             if length is not None and length > len(x):
                 x = np.concatenate([x] * int(np.ceil(length/len(x))))
-            else:
+            elif length is None:
                 length = len(x)
             feature = x[:length]
             return feature / np.max(np.abs(feature))
@@ -59,7 +59,7 @@ def universe_reader(file_path, length=None):
             assert sr == 16000
             if length is not None and length > len(x):
                 x = np.concatenate([x] * int(np.ceil(length/len(x))))
-            else:
+            elif length is None:
                 length = len(x)
             feature = x[:length]
             return feature / np.max(np.abs(feature))

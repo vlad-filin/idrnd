@@ -98,12 +98,14 @@ class MixDataset(Dataset):
         assert all(np.logical_xor(ishuman, isspoof)), " Wrong paths given"
         self.data = paths
         self.labels = isspoof
-        self.trasform = transform
+        self.reading_fn = reading_fn
+        self.transform = transform
         self.mfcc_func = mfcc_function
         weights_h = len(self.data) / (len(self.data) - sum(isspoof))
         weights_s = len(self.data) / sum(isspoof)
         print('class weights:', (weights_h, weights_s))
         self.weights = [weights_s if l == 1 else weights_h for l in self.labels]
+
     def __getitem__(self, idx):
         data = self.reading_fn(self.data[idx])
         mfcc_data = self.mfcc_func(data)

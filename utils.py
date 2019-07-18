@@ -8,6 +8,8 @@ from pathlib import Path
 import os
 from kekas.callbacks import Callback
 import os
+from sklearn.metrics import accuracy_score, roc_auc_score
+from torch.nn.functional import softmax
 
 def step_fn(model: torch.nn.Module,
             batch: torch.Tensor) -> torch.Tensor:
@@ -35,6 +37,8 @@ class ScoreCallback(Callback):
         self.target_key = target_key
         self.human_probs_for_human = []
         self.human_probs_for_spoof = []
+        self.spoof_probs = []
+        self.targets = []
         self.softmax = nn.Softmax(dim=1)
         self.metric_fn = metric_fn
         self.top3_scores = []
@@ -58,6 +62,8 @@ class ScoreCallback(Callback):
             tmp = preds[targets == 1, 0]
             if len(tmp) > 0:
                 self.human_probs_for_spoof.append(tmp)
+            self.spoof_probs.append(preds[:, 1, ...])
+            self.targets.append(targets)
 
     def on_epoch_end(self, epoch, state) -> None:
         if state.core.mode == "val":
@@ -65,11 +71,17 @@ class ScoreCallback(Callback):
             print("Metric computation")
             self.human_probs_for_human = np.hstack(self.human_probs_for_human)
             self.human_probs_for_spoof = np.hstack(self.human_probs_for_spoof)
+            self.spoof_probs = np.hstack(self.spoof_probs)
+            self.targets = np.hstack(self.targets)
+
+            auc = roc_auc(self.targets, self.spoof_probs)
             eer, threshold = self.metric_fn(self.human_probs_for_human, self.human_probs_for_spoof)
             self.human_probs_for_human = []
             self.human_probs_for_spoof = []
-            print('score 1 (eer): {0:.7f} threshold (?): {1:.4f}'.format(
-                eer, threshold))
+            self.spoof_probs = []
+            self.targets = []
+            print('score 1 (eer): {0:.7f} threshold (?): {1:.4f} auc:  {2:.7f}' .format(
+                eer, threshold, auc))
             self.val_writer.add_scalar("eer", eer, global_step=epoch)
             name = str(round(eer, 4)) + "." + str(epoch) + '.pt'
             name = os.path.join(self.path, name)
@@ -89,6 +101,13 @@ class ScoreCallback(Callback):
 def exp_decay(epoch, k=0.1, initial_rate=0.0001):
     return initial_rate * np.exp(-k * epoch)
 
-def jointer(abs_path, list_rel_path):
-    res_path = [os.path.join(abs_path, rp) for rp in list_rel_path]
+
+def jointer(abs_path, rel_path):
+    with open(rel_path, 'r') as f:
+        list_rel_path = f.readlines()
+    res_path = [os.path.join(abs_path, rp.strip("\n")) for rp in list_rel_path]
     return res_path
+
+def roc_auc(target, preds):
+    target = target.astype(np.int)
+    return roc_auc_score(target, preds)
