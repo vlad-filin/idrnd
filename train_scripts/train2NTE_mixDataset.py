@@ -10,8 +10,8 @@ from torch.utils.data import DataLoader
 from MobileNetV2_torchvision import MobileNetV2
 
 from models import TwoBranchModelNTE
-from dataset import MixDataset
-from reading_utils import universe_reader
+from dataset import MixDataset, VoiceAntiSpoofDataset
+from reading_utils import universe_reader, read_scipy
 from Metrics import compute_err
 import DftSpectrogram_pytorch
 from librosa.feature import mfcc
@@ -37,21 +37,20 @@ MN2_MFCC = MobileNetV2()
 MN2_MFCC.features[0][0] = nn.Conv2d(1, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
 model = TwoBranchModelNTE(MN2_MFCC, MN2_Dft, dft_pytorchNT, num_features=2560).to('cuda')
 
-train_files = [("../../ASV2019_human/", "../train_asv.txt"), ("../../Training_Data", "../train_idrnd.txt")]
-val_files = ("../../Training_Data", "../val_idrnd.txt")
-
+train_files = [("../../ASV2019_human/", "../train_asv.txt"),
+               ("../../Training_Data", "../train_idrnd.txt"),
+               ("../../Training_Data", "../val_idrnd.txt")]
+dataset_val_dir = '../../validationASV/'
+val_dataset = VoiceAntiSpoofDataset(dataset_val_dir, 'all', read_scipy,
+                                   transform=[lambda x: x[None, ...].astype(np.float32)])
 train_data = []
 for tpl in train_files:
     train_data += jointer(*tpl)
-val_data = jointer(*val_files)
 
 mfcc_function = lambda x: mfcc(x, sr=16000, n_mfcc=25)
 reading_fn = lambda x: universe_reader(x, length=100000)
 
 train_dataset = MixDataset(train_data, reading_fn, mfcc_function,
-                           transform=[lambda x: x[None, ...].astype(np.float32)])
-
-val_dataset = MixDataset(val_data, reading_fn, mfcc_function,
                            transform=[lambda x: x[None, ...].astype(np.float32)])
 
 #train_dataset.data = train_dataset.data[0:25] + train_dataset.data[-24:]
