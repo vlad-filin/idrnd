@@ -7,7 +7,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from densenet import densenet121
+from densenet import densenet169
 
 from models import TwoBranchModelNTE
 from dataset import VoiceAntiSpoofDataset
