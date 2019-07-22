@@ -7,7 +7,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from MobileNetV2_torchvision import MobileNetV2
+from densenet import densenet121
 
 from models import TwoBranchModelNTE
 from dataset import MixDataset, VoiceAntiSpoofDataset
@@ -29,13 +29,15 @@ dft_conf0 = {"length": 512,
             "mode": 'log',
             "normalize_feature": True}
 
+
 dft_pytorchNT = DftSpectrogram_pytorch.DftSpectrogram(**dft_conf0)
 
-MN2_Dft = MobileNetV2()
-MN2_Dft.features[0][0] = nn.Conv2d(1, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
-MN2_MFCC = MobileNetV2()
-MN2_MFCC.features[0][0] = nn.Conv2d(1, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
-model = TwoBranchModelNTE(MN2_MFCC, MN2_Dft, dft_pytorchNT, num_features=2560).to('cuda')
+DN2_Dft = densenet121()
+DN2_Dft.features[0] = nn.Conv2d(1, 64, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+DN2_MFCC = densenet121()
+DN2_MFCC.features[0] = nn.Conv2d(1, 64, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+model = TwoBranchModelNTE(DN2_MFCC, DN2_Dft, dft_pytorchNT, num_features=2048).to('cuda')
+
 
 train_files = [("../../ASV2019_human/", "../train_asv.txt"),
                ("../../Training_Data", "../train_idrnd.txt"),
@@ -47,7 +49,7 @@ train_data = []
 for tpl in train_files:
     train_data += jointer(*tpl)
 
-mfcc_function = lambda x: mfcc(x, sr=16000, n_mfcc=25)
+mfcc_function = lambda x: mfcc(x, sr=16000, n_mfcc=35)
 reading_fn = lambda x: universe_reader(x, length=100000)
 
 train_dataset = MixDataset(train_data, reading_fn, mfcc_function,
@@ -60,8 +62,8 @@ train_dataset = MixDataset(train_data, reading_fn, mfcc_function,
 #train_dataset.weights = train_dataset.weights[0:25] + train_dataset.weights[-24:]
 
 sampler = torch.utils.data.sampler.WeightedRandomSampler(train_dataset.weights, len(train_dataset.weights))
-batch_size = 32
-num_workers = 8
+batch_size = 36
+num_workers = 12
 
 print("###", len(train_dataset), len(val_dataset), len(np.unique(train_dataset.data)))
 
@@ -80,15 +82,15 @@ keker = Keker(model=model,
                                                   # an SGD is using by default
               opt_params={"weight_decay": 1e-3},
               callbacks=[ScoreCallback('preds', 'label', compute_err,
-                                       'checkpoints/2branchNTE_Mix', logdir='tensorboard/2branchNTE_Mix')],
+                                       'checkpoints/2branchNTE_Mix_DN', logdir='tensorboard/2branchNTE_Mix_DN')],
               metrics={"acc": accuracy})
 keker.kek(lr=1e-3,
           epochs=50,
           sched=torch.optim.lr_scheduler.MultiStepLR,  # pytorch lr scheduler class
           sched_params={"milestones": [15, 25, 35, 45], "gamma": 0.5},
           cp_saver_params={
-              "savedir": "checkpoints/2branchNTE_Mix",
+              "savedir": "checkpoints/2branchNTE_Mix_DN",
               "metric": "acc",
               "mode": 'max'},
-          logdir="tensorboard/2branchNTE_Mix")
-torch.save(model.state_dict(), "checkpoints/2branchNTE_Mix/final.pt")
+          logdir="tensorboard/2branchNTE_Mix_DN")
+torch.save(model.state_dict(), "checkpoints/2branchNTE_Mix_DN/final.pt")

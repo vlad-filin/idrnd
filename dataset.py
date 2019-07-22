@@ -107,10 +107,7 @@ class MixDataset(Dataset):
         self.weights = [weights_s if l == 1 else weights_h for l in self.labels]
 
     def __getitem__(self, idx):
-        print("in item")
         data = self.reading_fn(self.data[idx])
-        assert False, print(type(data))
-        print(type(data))
         mfcc_data = self.mfcc_func(data)
         for t in self.transform:
             data = t(data)
