@@ -8,7 +8,7 @@ import pdb
 
 class VoiceAntiSpoofDataset(Dataset):
     def __init__(self, dataset_dir, mode, reading_fn, train_val_index=None,
-                 seed=1, transform=[], add_TData=None):
+                 seed=1, transform=[], add_TData=None, mfcc_function=None):
         """
 
         :param dataset_dir: path to training data
@@ -21,6 +21,10 @@ class VoiceAntiSpoofDataset(Dataset):
 
         self.transform = transform
         self.reading_fn = reading_fn
+        if mfcc_function is None:
+            self.mfcc_function = lambda data: mfcc(data, sr=16000, n_mfcc=45)
+        else:
+            self.mfcc_function = mfcc_function
         if train_val_index is None:
             wav_paths = sorted(glob.glob(os.path.join(dataset_dir, '**/*.wav'), recursive=True))
             random.shuffle(wav_paths)
@@ -71,7 +75,7 @@ class VoiceAntiSpoofDataset(Dataset):
 
     def __getitem__(self, idx):
         data = self.reading_fn(self.data[idx])
-        mfcc_data = mfcc(data, sr=16000, n_mfcc=45)
+        mfcc_data = self.mfcc_function(data)
         for t in self.transform:
             data = t(data)
             mfcc_data = t(mfcc_data)
