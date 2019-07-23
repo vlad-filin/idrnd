@@ -54,7 +54,13 @@ class ScoreCallback(Callback):
         if state.core.mode == "val":
 
             preds = state.core.out[self.preds_key]
-            preds = self.softmax(preds).cpu().numpy()
+            if isinstance(preds, list):
+                res = []
+                for p in preds:
+                    res.append(self.softmax(p).cpu().numpy())
+                preds = np.concatenate(res, axis=0)
+            else:
+                preds = self.softmax(preds).cpu().numpy()
             targets = state.core.batch[self.target_key].cpu().numpy()
             tmp = preds[targets == 0, 0]
             if len(tmp) > 0:

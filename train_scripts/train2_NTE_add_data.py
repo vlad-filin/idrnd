@@ -56,18 +56,20 @@ dataset = VoiceAntiSpoofDataset(dataset_dir, 'all', read_scipy,
 dataset_val = VoiceAntiSpoofDataset(dataset_dir, 'val', read_scipy,
                                  transform=[lambda x: x[None, ...].astype(np.float32)])
 """
-dataset_val_dir = '../../ASV2017DEV/'
+dataset_val_dir = '../../validationASV/'
 dataset_val = VoiceAntiSpoofDataset(dataset_val_dir, 'all', read_scipy,
                                    transform=[lambda x: x[None, ...].astype(np.float32)])
 
-sampler = torch.utils.data.sampler.WeightedRandomSampler(dataset.weights, len(dataset.weights))
-batch_size = 192
-num_workers = 16
 
-#dataset.data = dataset.data[0:24] + dataset.data[-24:]
-#dataset.labels = dataset.labels[0:24]  + dataset.labels[-24:]
-#dataset_val.data = dataset_val.data[0:24] + dataset_val.data[-24:]
-#dataset_val.labels = dataset_val.labels[0:24]  + dataset_val.labels[-24:]
+batch_size = 16
+num_workers = 8
+
+dataset.data = dataset.data[0:24] + dataset.data[-24:]
+dataset.labels = dataset.labels[0:24]  + dataset.labels[-24:]
+dataset_val.data = dataset_val.data[0:24] + dataset_val.data[-24:]
+dataset_val.labels = dataset_val.labels[0:24]  + dataset_val.labels[-24:]
+dataset.weights = dataset.weights[0:24] + dataset.weights[-24:]
+sampler = torch.utils.data.sampler.WeightedRandomSampler(dataset.weights, len(dataset.weights))
 dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers, sampler=sampler)
 val_dl = DataLoader(dataset_val, batch_size=batch_size, num_workers=num_workers, shuffle=False)
 len(dataset), len(dataset_val), len(np.unique(dataset.data))
