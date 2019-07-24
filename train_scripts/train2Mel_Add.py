@@ -24,9 +24,9 @@ import torch.autograd as autograd
 from librosa.feature import melspectrogram
 
 
-dft_conf0 = {"length": 1024,
-            "shift": 512,
-            "nfft": 1024,
+dft_conf0 = {"length": 512,
+            "shift": 256,
+            "nfft": 512,
             "mode": 'log',
             "normalize_feature": True}
 
@@ -61,7 +61,7 @@ dataset_val = VoiceAntiSpoofDataset(dataset_val_dir, 'all', read_scipy,
                                    transform=[lambda x: x[None, ...].astype(np.float32)])
 
 
-batch_size = 192
+batch_size = 48
 num_workers = 16
 """
 dataset.data = dataset.data[0:24] + dataset.data[-24:]
@@ -89,8 +89,8 @@ keker = Keker(model=model,
                                                   # an SGD is using by default
               opt_params={"weight_decay": 1e-3},
               callbacks=[ScoreCallback('preds', 'label', compute_err,
-                                       'checkpoints/2branch_mel128_addData_DN',
-                                       logdir='tensorboard/2branch_mel128_addData_DN')],
+                                       'checkpoints/2branch_mel128_addData_DN_OLDDFT',
+                                       logdir='tensorboard/2branch_mel128_addData_DN_OLDDFT')],
                  metrics={"acc": accuracy})
 with autograd.detect_anomaly():
     keker.kek(lr=1e-3,
@@ -98,10 +98,11 @@ with autograd.detect_anomaly():
               sched=torch.optim.lr_scheduler.MultiStepLR,       # pytorch lr scheduler class
               sched_params={"milestones": [15, 25, 35, 45], "gamma": 0.5},
              cp_saver_params={
-                  "savedir": "checkpoints/2branch_mel128_addData_DN",
+                  "savedir": "checkpoints/2branch_mel128_addData_DN_OLDDFT",
              "metric":"acc",
              "mode":'max'},
-              logdir="tensorboard/2branch_mel128_addData_DN")
+              logdir="tensorboard/2branch_mel128_addData_DN_OLDDFT")
 
 
-torch.save(model.state_dict(), "checkpoints/2branch_mel128_addData_DN/final.pt")
+
+torch.save(model.state_dict(), "checkpoints/2branch_mel128_addData_DN_OLDDFT/final.pt")
