@@ -22,9 +22,11 @@ class VoiceAntiSpoofDataset(Dataset):
         self.transform = transform
         self.reading_fn = reading_fn
         if mfcc_function is None:
+            print("mfcc is None")
             self.mfcc_function = lambda data: mfcc(data, sr=16000, n_mfcc=45)
         else:
             self.mfcc_function = mfcc_function
+            print("using given function", mfcc_function)
         if train_val_index is None:
             wav_paths = sorted(glob.glob(os.path.join(dataset_dir, '**/*.wav'), recursive=True))
             random.shuffle(wav_paths)
