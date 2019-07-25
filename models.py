@@ -99,3 +99,14 @@ class TwoBranchModelNTE(nn.Module):
         res = self.linear(v)
         # x = self.softmax(x)
         return res
+
+class LibrosaFeaturesModel(nn.Module):
+    def __init__(self, Net):
+        super(LibrosaFeaturesModel, self).__init__()
+
+        self.Net = Net
+        self.softmax = nn.Softmax(dim=1)
+    def forward(self, voice, librosa_feature):
+        x = self.Net(librosa_feature)
+        #x = self.softmax(x)
+        return x
