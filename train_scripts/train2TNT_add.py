@@ -70,12 +70,12 @@ dataset.labels = dataset.labels[0:24]  + dataset.labels[-24:]
 dataset_val.data = dataset_val.data[0:24] + dataset_val.data[-24:]
 dataset_val.labels = dataset_val.labels[0:24]  + dataset_val.labels[-24:]
 dataset.weights = dataset.weights[0:24] + dataset.weights[-24:]
-
+"""
 sampler = torch.utils.data.sampler.WeightedRandomSampler(dataset.weights, len(dataset.weights))
 dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers, sampler=sampler)
 val_dl = DataLoader(dataset_val, batch_size=batch_size, num_workers=num_workers, shuffle=False)
 len(dataset), len(dataset_val), len(np.unique(dataset.data))
-"""
+
 dataowner = DataOwner(dataloader, val_dl, None)
 criterion = nn.CrossEntropyLoss(weight=None)
 
