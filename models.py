@@ -110,3 +110,26 @@ class LibrosaFeaturesModel(nn.Module):
         x = self.Net(librosa_feature)
         #x = self.softmax(x)
         return x
+
+class TwoBranchTNT(nn.Module):
+
+    def __init__(self, NetMfcc, NetDft, extractorNT, extractorT, num_features=1024):
+        super(TwoBranchTNT, self).__init__()
+
+        self.NetMfcc = NetMfcc
+        self.NetDft = NetDft
+        self.extractorNT = extractorNT
+        self.extractorT = extractorT
+        self.linear = nn.Linear(num_features, 2, bias=False)
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, x, mfcc):
+        x0 = self.extractorNT(x)
+        x1 = self.extractorT(x)
+        x = torch.cat((x0, x1), dim=1)
+        v0 = self.NetDft(x)
+        v1 = self.NetMfcc(mfcc)
+        v = torch.cat((v0, v1), dim=1)
+        res = self.linear(v)
+        # x = self.softmax(x)
+        return res
